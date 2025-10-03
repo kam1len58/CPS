@@ -23,7 +23,7 @@ public class StudentService {
 
     @PostConstruct
     public void init() {
-        create(new Student(null, "unique_name_3", "group1", null));
+        // create(new Student(null, "unique_name_4", "group1", null));
     }
 
     public List<Student> getAll() {
