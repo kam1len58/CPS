@@ -26,7 +26,7 @@ public class Student {
     @Size(min = 2, max = 100, message = "demo")
     @Column(nullable = false, unique = true, length = 100)
     private String name;
-    @Column(name = "student_group", nullable = false)
+    @Column(name = "student_group", unique = true, nullable = false)
     private String group;
     @Transient
     private List<TimeEntry> recentEntries;

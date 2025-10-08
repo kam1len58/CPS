@@ -21,7 +21,7 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api")
-public class DeadlineController {
+public class DeadlinePredictionDTOСontroller {
     private List<DeadlinePredictionDTO> deadlines = new ArrayList<>(Arrays.asList(
             new DeadlinePredictionDTO(1L, "DB lab report", LocalDateTime.of(2025, 10, 15, 18, 0), 8.0, RiskLevel.HIGH),
             new DeadlinePredictionDTO(2L, "Math homework", LocalDateTime.of(2025, 11, 23, 10, 0), 2.0, RiskLevel.LOW),

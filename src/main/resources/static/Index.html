@@ -4,420 +4,506 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Management System</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <title>Student & Time Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        .table-container {
-            margin: 20px 0;
+        body {
+            font-family: 'Inter', sans-serif;
         }
 
-        .action-buttons {
-            white-space: nowrap;
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
         }
 
-        .modal-header {
-            background-color: #f8f9fa;
-        }
-
-        .student-form {
+        .modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 90%;
             max-width: 500px;
-            margin: 0 auto;
         }
 
-        .loading {
-            display: none;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .error-message {
-            color: #dc3545;
-            font-size: 0.875em;
-            margin-top: 0.25rem;
+        .tab-button.active {
+            border-bottom-color: #3b82f6;
+            color: #3b82f6;
         }
     </style>
 </head>
 
-<body>
-    <div class="container mt-4">
-        <div class="row">
-            <div class="col-12">
-                <h1 class="text-center mb-4">
-                    <i class="fas fa-user-graduate me-2"></i>Student Management System
-                </h1>
+<body class="bg-gray-100 text-gray-800">
 
-                <!-- Control Panel -->
-                <div class="card mb-4">
-                    <div class="card-body">
-                        <div class="row align-items-center">
-                            <div class="col-md-6">
-                                <button class="btn btn-success" onclick="showAddForm()">
-                                    <i class="fas fa-plus me-1"></i>Add New Student
-                                </button>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="input-group">
-                                    <input type="text" class="form-control" placeholder="Search students..."
-                                        id="searchInput">
-                                    <button class="btn btn-outline-secondary" type="button" onclick="searchStudents()">
-                                        <i class="fas fa-search"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <h1 class="text-3xl font-bold mb-6 text-center text-gray-700">Student & Time Management System</h1>
 
-                <!-- Loading Indicator -->
-                <div id="loading" class="loading">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    <p class="mt-2">Loading students...</p>
-                </div>
+        <!-- Tab Navigation -->
+        <div class="mb-6 border-b border-gray-200">
+            <nav class="flex space-x-4" aria-label="Tabs">
+                <button id="tab-students" onclick="switchTab('students')"
+                    class="tab-button active font-medium px-3 py-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Students</button>
+                <button id="tab-time-entries" onclick="switchTab('time-entries')"
+                    class="tab-button font-medium px-3 py-2 border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Time
+                    Entries</button>
+            </nav>
+        </div>
 
-                <!-- Students Table -->
-                <div class="card table-container">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">
-                            <i class="fas fa-list me-2"></i>Students List
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-striped table-hover">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Name</th>
-                                        <th>Group</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="studentsTableBody">
-                                    <!-- Students will be loaded here -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+        <!-- Students Table Section -->
+        <div id="content-students" class="tab-content bg-white p-6 rounded-lg shadow-md">
+            <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
+                <h2 class="text-2xl font-semibold">Students</h2>
+                <div class="flex items-center gap-2">
+                    <input type="text" id="studentSearch" placeholder="Filter by name..."
+                        class="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                 </div>
+                <button onclick="openModal('studentModal')"
+                    class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow w-full sm:w-auto">Add
+                    New Student</button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white">
+                    <thead class="bg-gray-200">
+                        <tr>
+                            <th class="py-3 px-4 text-left">ID</th>
+                            <th class="py-3 px-4 text-left">Name</th>
+                            <th class="py-3 px-4 text-left">Group</th>
+                            <th class="py-3 px-4 text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="studentTableBody">
+                        <!-- Students will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-                <!-- No Students Message -->
-                <div id="noStudents" class="alert alert-info text-center" style="display: none;">
-                    <i class="fas fa-info-circle me-2"></i>No students found. Add your first student!
+        <!-- Time Entries Table Section -->
+        <div id="content-time-entries" class="tab-content bg-white p-6 rounded-lg shadow-md hidden">
+            <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
+                <h2 class="text-2xl font-semibold">Time Entries</h2>
+                <div class="flex flex-col sm:flex-row items-center gap-2 w-full sm:w-auto">
+                    <input type="number" id="timeEntryStudentIdSearch" placeholder="Filter by Student ID..."
+                        class="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                    <select id="timeEntryTypeSearch"
+                        class="w-full sm:w-auto px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">All Types</option>
+                        <option value="LAB">LAB</option>
+                        <option value="EXAM_PREP">EXAM_PREP</option>
+                        <option value="PROJECT">PROJECT</option>
+                        <option value="CODING">CODING</option>
+                        <option value="REST">REST</option>
+                        <option value="LECTURE">LECTURE</option>
+                    </select>
                 </div>
+                <button onclick="openModal('timeEntryModal')"
+                    class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg shadow w-full sm:w-auto">Add
+                    New Time Entry</button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full bg-white">
+                    <thead class="bg-gray-200">
+                        <tr>
+                            <th class="py-3 px-4 text-left">ID</th>
+                            <th class="py-3 px-4 text-left">Student ID</th>
+                            <th class="py-3 px-4 text-left">Type</th>
+                            <th class="py-3 px-4 text-left">Description</th>
+                            <th class="py-3 px-4 text-left">Start</th>
+                            <th class="py-3 px-4 text-left">End</th>
+                            <th class="py-3 px-4 text-left">Billable</th>
+                            <th class="py-3 px-4 text-center">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="timeEntryTableBody">
+                        <!-- Time Entries will be loaded here -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <!-- Add/Edit Student Modal -->
-    <div class="modal fade" id="studentModal" tabindex="-1" aria-labelledby="studentModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="studentModalLabel">Add New Student</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <!-- Student Modal -->
+    <div id="studentModal" class="modal-backdrop hidden">
+        <div class="modal-content">
+            <h3 id="studentModalTitle" class="text-xl font-semibold mb-4">Add Student</h3>
+            <form id="studentForm">
+                <input type="hidden" id="studentId">
+                <div class="mb-4">
+                    <label for="studentName" class="block text-sm font-medium text-gray-700">Name *</label>
+                    <input type="text" id="studentName"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        required>
                 </div>
-                <div class="modal-body">
-                    <form id="studentForm" class="student-form">
-                        <input type="hidden" id="studentId">
-
-                        <div class="mb-3">
-                            <label for="name" class="form-label">Name *</label>
-                            <input type="text" class="form-control" id="name" required>
-                            <div class="error-message" id="nameError"></div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="group" class="form-label">Group *</label>
-                            <input type="text" class="form-control" id="group" required>
-                            <div class="error-message" id="groupError"></div>
-                        </div>
-                    </form>
+                <div class="mb-4">
+                    <label for="studentGroup" class="block text-sm font-medium text-gray-700">Group *</label>
+                    <input type="text" id="studentGroup"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        required>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" onclick="saveStudent()">Save Student</button>
+                <div class="flex justify-end space-x-2">
+                    <button type="button" onclick="closeModal('studentModal')"
+                        class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">Cancel</button>
+                    <button type="submit"
+                        class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Save</button>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
 
-    <!-- Delete Confirmation Modal -->
-    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <!-- Time Entry Modal -->
+    <div id="timeEntryModal" class="modal-backdrop hidden">
+        <div class="modal-content">
+            <h3 id="timeEntryModalTitle" class="text-xl font-semibold mb-4">Add Time Entry</h3>
+            <form id="timeEntryForm">
+                <input type="hidden" id="timeEntryId">
+                <div class="mb-4">
+                    <label for="timeEntryStudentId" class="block text-sm font-medium text-gray-700">Student ID *</label>
+                    <input type="number" id="timeEntryStudentId"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        required>
                 </div>
-                <div class="modal-body">
-                    Are you sure you want to delete this student? This action cannot be undone.
+                <div class="mb-4">
+                    <label for="timeEntryType" class="block text-sm font-medium text-gray-700">Type *</label>
+                    <select id="timeEntryType"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        required>
+                        <option value="LAB">LAB</option>
+                        <option value="EXAM_PREP">EXAM_PREP</option>
+                        <option value="PROJECT">PROJECT</option>
+                        <option value="CODING">CODING</option>
+                        <option value="REST">REST</option>
+                        <option value="LECTURE">LECTURE</option>
+                    </select>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-danger" onclick="confirmDelete()">Delete</button>
+                <div class="mb-4">
+                    <label for="timeEntryDescription" class="block text-sm font-medium text-gray-700">Description
+                        *</label>
+                    <textarea id="timeEntryDescription" rows="3"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        required></textarea>
                 </div>
-            </div>
+                <div class="mb-4">
+                    <label for="timeEntryStart" class="block text-sm font-medium text-gray-700">Start Time *</label>
+                    <input type="datetime-local" id="timeEntryStart"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                        required>
+                </div>
+                <div class="mb-4">
+                    <label for="timeEntryEnd" class="block text-sm font-medium text-gray-700">End Time</label>
+                    <input type="datetime-local" id="timeEntryEnd"
+                        class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                </div>
+                <div class="mb-4 flex items-center">
+                    <input type="checkbox" id="timeEntryBillable"
+                        class="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                    <label for="timeEntryBillable" class="ml-2 block text-sm text-gray-900">Billable</label>
+                </div>
+                <div class="flex justify-end space-x-2">
+                    <button type="button" onclick="closeModal('timeEntryModal')"
+                        class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">Cancel</button>
+                    <button type="submit"
+                        class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">Save</button>
+                </div>
+            </form>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom alert/message box -->
+    <div id="messageBox"
+        class="fixed bottom-5 right-5 bg-green-500 text-white py-2 px-4 rounded-lg shadow-lg hidden z-50">
+        <p id="messageText"></p>
+    </div>
+
     <script>
-        let students = [];
-        let studentToDelete = null;
+        const API_BASE_URL = 'http://localhost:8080/api';
 
-        // Initialize the application
-        document.addEventListener('DOMContentLoaded', function () {
-            loadStudents();
-        });
+        // --- Utility Functions ---
+        function showMessage(message, isError = false) {
+            const messageBox = document.getElementById('messageBox');
+            const messageText = document.getElementById('messageText');
+            messageText.textContent = message;
+            messageBox.className = `fixed bottom-5 right-5 text-white py-2 px-4 rounded-lg shadow-lg z-50 ${isError ? 'bg-red-500' : 'bg-green-500'}`;
+            messageBox.classList.remove('hidden');
+            setTimeout(() => {
+                messageBox.classList.add('hidden');
+            }, 3000);
+        }
 
-        // Load all students
-        async function loadStudents() {
-            showLoading(true);
-            try {
-                const response = await fetch('/api/students');
-                if (response.ok) {
-                    students = await response.json();
-                    renderStudentsTable();
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            const date = new Date(dateString);
+            return date.toLocaleString();
+        }
+
+        // --- Tab Switching ---
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.add('hidden'));
+            document.querySelectorAll('.tab-button').forEach(button => button.classList.remove('active'));
+            document.getElementById(`content-${tabName}`).classList.remove('hidden');
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+        }
+
+        // --- Modal Handling ---
+        function openModal(modalId, data = null) {
+            const modal = document.getElementById(modalId);
+            modal.classList.remove('hidden');
+
+            if (modalId === 'studentModal') {
+                const form = document.getElementById('studentForm');
+                const title = document.getElementById('studentModalTitle');
+                if (data) {
+                    title.textContent = 'Edit Student';
+                    document.getElementById('studentId').value = data.id;
+                    document.getElementById('studentName').value = data.name;
+                    document.getElementById('studentGroup').value = data.group;
                 } else {
-                    throw new Error('Failed to load students');
+                    title.textContent = 'Add Student';
+                    form.reset();
+                    document.getElementById('studentId').value = '';
+                }
+            } else if (modalId === 'timeEntryModal') {
+                const form = document.getElementById('timeEntryForm');
+                const title = document.getElementById('timeEntryModalTitle');
+                if (data) {
+                    title.textContent = 'Edit Time Entry';
+                    document.getElementById('timeEntryId').value = data.id;
+                    document.getElementById('timeEntryStudentId').value = data.student ? data.student.id : '';
+                    document.getElementById('timeEntryType').value = data.type;
+                    document.getElementById('timeEntryDescription').value = data.description;
+                    document.getElementById('timeEntryStart').value = data.start ? data.start.slice(0, 16) : '';
+                    document.getElementById('timeEntryEnd').value = data.end ? data.end.slice(0, 16) : '';
+                    document.getElementById('timeEntryBillable').checked = data.billable;
+                } else {
+                    title.textContent = 'Add Time Entry';
+                    form.reset();
+                    document.getElementById('timeEntryId').value = '';
+                }
+            }
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        // --- Student API Calls ---
+        async function fetchStudents() {
+            const searchTerm = document.getElementById('studentSearch').value;
+            const params = new URLSearchParams();
+            if (searchTerm) {
+                params.append('name', searchTerm);
+            }
+            const url = `${API_BASE_URL}/studentFilter?${params.toString()}`;
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Failed to fetch students');
+
+                const page = await response.json();
+                const data = page.content;
+
+                const tableBody = document.getElementById('studentTableBody');
+                tableBody.innerHTML = '';
+                if (data) {
+                    data.forEach(student => {
+                        const row = `
+                            <tr class="border-b">
+                                <td class="py-2 px-4">${student.id}</td>
+                                <td class="py-2 px-4">${student.name}</td>
+                                <td class="py-2 px-4">${student.group}</td>
+                                <td class="py-2 px-4 text-center">
+                                    <button onclick='openModal("studentModal", ${JSON.stringify(student)})' class="text-blue-500 hover:underline mr-2">Edit</button>
+                                    <button onclick="deleteStudent(${student.id})" class="text-red-500 hover:underline">Delete</button>
+                                </td>
+                            </tr>
+                        `;
+                        tableBody.innerHTML += row;
+                    });
                 }
             } catch (error) {
-                console.error('Error loading students:', error);
-                alert('Error loading students: ' + error.message);
-            } finally {
-                showLoading(false);
+                console.error('Error fetching students:', error);
+                showMessage('Error fetching students', true);
             }
         }
 
-        // Search students
-        async function searchStudents() {
-            const searchTerm = document.getElementById('searchInput').value.trim();
-            if (!searchTerm) {
-                loadStudents();
-                return;
-            }
-
-            showLoading(true);
-            try {
-                const response = await fetch(`/api/students?search=${encodeURIComponent(searchTerm)}`);
-                if (response.ok) {
-                    students = await response.json();
-                    renderStudentsTable();
-                } else {
-                    throw new Error('Search failed');
-                }
-            } catch (error) {
-                console.error('Error searching students:', error);
-                alert('Error searching students: ' + error.message);
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        // Render students table
-        function renderStudentsTable() {
-            const tbody = document.getElementById('studentsTableBody');
-            const noStudents = document.getElementById('noStudents');
-
-            if (students.length === 0) {
-                tbody.innerHTML = '';
-                noStudents.style.display = 'block';
-                return;
-            }
-
-            noStudents.style.display = 'none';
-            tbody.innerHTML = students.map(student => `
-                <tr>
-                    <td>${student.id}</td>
-                    <td>${escapeHtml(student.name)}</td>
-                    <td>${escapeHtml(student.group)}</td>
-                    <td class="action-buttons">
-                        <button class="btn btn-sm btn-outline-primary me-1" onclick="viewStudent(${student.id})" title="View">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-warning me-1" onclick="editStudent(${student.id})" title="Edit">
-                            <i class="fas fa-edit"></i>
-                        </button>
-                        <button class="btn btn-sm btn-outline-danger" onclick="deleteStudent(${student.id})" title="Delete">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
-        }
-
-        // Show add form
-        function showAddForm() {
-            document.getElementById('studentModalLabel').textContent = 'Add New Student';
-            document.getElementById('studentForm').reset();
-            document.getElementById('studentId').value = '';
-            document.getElementById('nameError').textContent = '';
-            document.getElementById('groupError').textContent = '';
-
-            const modal = new bootstrap.Modal(document.getElementById('studentModal'));
-            modal.show();
-        }
-
-        // View student details
-        async function viewStudent(id) {
-            try {
-                const response = await fetch(`/api/students/${id}`);
-                if (response.ok) {
-                    const student = await response.json();
-                    alert(`Student Details:\n\nID: ${student.id}\nName: ${student.name}\nGroup: ${student.group}`);
-                } else {
-                    throw new Error('Student not found');
-                }
-            } catch (error) {
-                console.error('Error viewing student:', error);
-                alert('Error viewing student: ' + error.message);
-            }
-        }
-
-        // Edit student
-        async function editStudent(id) {
-            try {
-                const response = await fetch(`/api/students/${id}`);
-                if (response.ok) {
-                    const student = await response.json();
-
-                    document.getElementById('studentModalLabel').textContent = 'Edit Student';
-                    document.getElementById('studentId').value = student.id;
-                    document.getElementById('name').value = student.name;
-                    document.getElementById('group').value = student.group;
-                    document.getElementById('nameError').textContent = '';
-                    document.getElementById('groupError').textContent = '';
-
-                    const modal = new bootstrap.Modal(document.getElementById('studentModal'));
-                    modal.show();
-                } else {
-                    throw new Error('Student not found');
-                }
-            } catch (error) {
-                console.error('Error loading student for edit:', error);
-                alert('Error loading student: ' + error.message);
-            }
-        }
-
-        // Save student (create or update)
-        async function saveStudent() {
+        async function saveStudent(event) {
+            event.preventDefault();
             const id = document.getElementById('studentId').value;
-            const name = document.getElementById('name').value.trim();
-            const group = document.getElementById('group').value.trim();
-
-            // Basic validation
-            let isValid = true;
-            document.getElementById('nameError').textContent = '';
-            document.getElementById('groupError').textContent = '';
-
-            if (!name) {
-                document.getElementById('nameError').textContent = 'Name is required';
-                isValid = false;
-            }
-
-            if (!group) {
-                document.getElementById('groupError').textContent = 'Group is required';
-                isValid = false;
-            }
-
-            if (!isValid) return;
-
-            const studentData = {
-                name: name,
-                group: group
+            const student = {
+                name: document.getElementById('studentName').value,
+                group: document.getElementById('studentGroup').value
             };
 
-            try {
-                let response;
-                if (id) {
-                    // Update existing student
-                    response = await fetch(`/api/students/${id}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(studentData)
-                    });
-                } else {
-                    // Create new student
-                    response = await fetch('/api/students', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify(studentData)
-                    });
-                }
+            const url = id ? `${API_BASE_URL}/students/${id}` : `${API_BASE_URL}/students`;
+            const method = id ? 'PUT' : 'POST';
 
-                if (response.ok) {
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('studentModal'));
-                    modal.hide();
-                    loadStudents();
-                    alert(`Student ${id ? 'updated' : 'added'} successfully!`);
-                } else {
-                    const error = await response.text();
-                    throw new Error(error || 'Failed to save student');
-                }
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(student)
+                });
+                if (!response.ok) throw new Error(`Failed to save student. Status: ${response.status}`);
+
+                showMessage(`Student successfully ${id ? 'updated' : 'created'}!`);
+                closeModal('studentModal');
+                fetchStudents();
             } catch (error) {
                 console.error('Error saving student:', error);
-                alert('Error saving student: ' + error.message);
+                showMessage('Error saving student', true);
             }
         }
 
-        // Delete student confirmation
-        function deleteStudent(id) {
-            studentToDelete = id;
-            const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-            modal.show();
-        }
-
-        // Confirm delete
-        async function confirmDelete() {
-            if (!studentToDelete) return;
-
+        async function deleteStudent(id) {
+            if (!confirm('Are you sure you want to delete this student?')) return;
             try {
-                const response = await fetch(`/api/students/${studentToDelete}`, {
-                    method: 'DELETE'
-                });
-
-                if (response.ok) {
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('deleteModal'));
-                    modal.hide();
-                    loadStudents();
-                    alert('Student deleted successfully!');
-                } else {
-                    throw new Error('Failed to delete student');
-                }
+                const response = await fetch(`${API_BASE_URL}/students/${id}`, { method: 'DELETE' });
+                if (!response.ok) throw new Error('Failed to delete student');
+                showMessage('Student deleted successfully!');
+                fetchStudents();
             } catch (error) {
                 console.error('Error deleting student:', error);
-                alert('Error deleting student: ' + error.message);
-            } finally {
-                studentToDelete = null;
+                showMessage('Error deleting student', true);
             }
         }
 
-        // Utility functions
-        function showLoading(show) {
-            document.getElementById('loading').style.display = show ? 'block' : 'none';
-        }
+        // --- Time Entry API Calls ---
+        async function fetchTimeEntries() {
+            const studentId = document.getElementById('timeEntryStudentIdSearch').value;
+            const type = document.getElementById('timeEntryTypeSearch').value;
 
-        function escapeHtml(unsafe) {
-            return unsafe
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#039;");
-        }
+            const params = new URLSearchParams();
+            if (studentId) params.append('studentId', studentId);
+            if (type) params.append('type', type);
 
-        // Handle Enter key in search
-        document.getElementById('searchInput').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                searchStudents();
+            const url = `${API_BASE_URL}/timeEntryFilter?${params.toString()}`;
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Failed to fetch time entries');
+
+                const page = await response.json();
+                const data = page.content;
+
+                const tableBody = document.getElementById('timeEntryTableBody');
+                tableBody.innerHTML = '';
+                if (data) {
+                    data.forEach(entry => {
+                        const row = `
+                            <tr class="border-b">
+                                <td class="py-2 px-4">${entry.id}</td>
+                                <td class="py-2 px-4">${entry.student ? entry.student.id : 'N/A'}</td>
+                                <td class="py-2 px-4">${entry.type || 'N/A'}</td>
+                                <td class="py-2 px-4">${entry.description || 'N/A'}</td>
+                                <td class="py-2 px-4">${formatDate(entry.start)}</td>
+                                <td class="py-2 px-4">${formatDate(entry.end)}</td>
+                                <td class="py-2 px-4">${entry.billable ? 'Yes' : 'No'}</td>
+                                <td class="py-2 px-4 text-center">
+                                   <button onclick='openModal("timeEntryModal", ${JSON.stringify(entry)})' class="text-blue-500 hover:underline mr-2">Edit</button>
+                                   <button onclick="deleteTimeEntry(${entry.id})" class="text-red-500 hover:underline">Delete</button>
+                                </td>
+                            </tr>
+                        `;
+                        tableBody.innerHTML += row;
+                    });
+                }
+            } catch (error) {
+                console.error('Error fetching time entries:', error);
+                showMessage('Error fetching time entries', true);
             }
+        }
+
+        async function saveTimeEntry(event) {
+            event.preventDefault();
+            const id = document.getElementById('timeEntryId').value;
+
+            // Собираем данные с отладкой
+            const timeEntryData = {
+                student: { id: parseInt(document.getElementById('timeEntryStudentId').value) },
+                type: document.getElementById('timeEntryType').value,
+                description: document.getElementById('timeEntryDescription').value,
+                start: document.getElementById('timeEntryStart').value ? new Date(document.getElementById('timeEntryStart').value).toISOString() : null,
+                end: document.getElementById('timeEntryEnd').value ? new Date(document.getElementById('timeEntryEnd').value).toISOString() : null,
+                billable: document.getElementById('timeEntryBillable').checked
+            };
+
+            console.log('Sending time entry data:', timeEntryData);
+
+            const url = id ? `${API_BASE_URL}/timeEntries/${id}` : `${API_BASE_URL}/timeEntries`;
+            const method = id ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(timeEntryData)
+                });
+
+                console.log('Response status:', response.status);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Server error response:', errorText);
+                    throw new Error(`Failed to save time entry. Status: ${response.status}. Message: ${errorText}`);
+                }
+
+                const savedEntry = await response.json();
+                console.log('Successfully saved:', savedEntry);
+
+                showMessage(`Time entry successfully ${id ? 'updated' : 'created'}!`);
+                closeModal('timeEntryModal');
+                fetchTimeEntries();
+            } catch (error) {
+                console.error('Error saving time entry:', error);
+                showMessage('Error saving time entry: ' + error.message, true);
+            }
+        }
+
+        async function deleteTimeEntry(id) {
+            if (!confirm('Are you sure you want to delete this time entry?')) return;
+            try {
+                const response = await fetch(`${API_BASE_URL}/timeEntries/${id}`, { method: 'DELETE' });
+                if (!response.ok) throw new Error('Failed to delete time entry');
+                showMessage('Time entry deleted successfully!');
+                fetchTimeEntries();
+            } catch (error) {
+                console.error('Error deleting time entry:', error);
+                showMessage('Error deleting time entry', true);
+            }
+        }
+
+        // --- Debounce function for search inputs ---
+        function debounce(func, delay) {
+            let timeout;
+            return function (...args) {
+                const context = this;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(context, args), delay);
+            };
+        }
+
+        // --- Initialization ---
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchStudents();
+            fetchTimeEntries();
+
+            document.getElementById('studentForm').addEventListener('submit', saveStudent);
+            document.getElementById('timeEntryForm').addEventListener('submit', saveTimeEntry);
+
+            // --- Search Event Listeners ---
+            const debouncedStudentSearch = debounce(fetchStudents, 300);
+            document.getElementById('studentSearch').addEventListener('input', debouncedStudentSearch);
+
+            const debouncedTimeEntrySearch = debounce(fetchTimeEntries, 300);
+            document.getElementById('timeEntryStudentIdSearch').addEventListener('input', debouncedTimeEntrySearch);
+            document.getElementById('timeEntryTypeSearch').addEventListener('change', debouncedTimeEntrySearch);
         });
     </script>
 </body>

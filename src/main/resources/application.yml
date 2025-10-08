@@ -23,7 +23,7 @@ spring:
     datasource:
         url: jdbc:postgresql://localhost:5432/student
         username: postgres
-        password: 123
+        password: 20042005kmA
         driver-class-name: org.postgresql.Driver
     jpa:
         database-platform: org.hibernate.dialect.PostgreSQLDialect
