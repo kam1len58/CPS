@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.demo.model.DeadlinePredictionDTO;
+import com.example.demo.dto.DeadlinePredictionDTO;
 import com.example.demo.model.RiskLevel;
 
 import jakarta.validation.Valid;

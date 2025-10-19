@@ -10,8 +10,9 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**") // This applies CORS to all your API endpoints
-                .allowedOrigins("*")   // Allows requests from any origin. For production, you might want to restrict this to your frontend's domain.
+                .allowedOrigins("*") // Allows requests from any origin. For production, you might want to restrict
+                                     // this to your frontend's domain.
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS") // Allows the specified HTTP methods
-                .allowedHeaders("*");  // Allows all headers
+                .allowedHeaders("*"); // Allows all headers
     }
 }

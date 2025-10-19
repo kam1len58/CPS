@@ -1,6 +1,8 @@
-package com.example.demo.model;
+package com.example.demo.dto;
 
 import java.time.LocalDateTime;
+
+import com.example.demo.model.RiskLevel;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;

@@ -7,6 +7,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -25,6 +26,7 @@ public class TimeEntry {
 
     @NotNull
     @ManyToOne
+    @JoinColumn(nullable = false)
     private Student student;
 
     @NotNull
@@ -33,10 +35,10 @@ public class TimeEntry {
     @NotBlank
     private String description;
 
-    @NotNull
+    @Column(nullable = false)
     private LocalDateTime start;
 
-    @Column(name = "end_time")
+    @Column(name = "end_time", nullable = false)
     private LocalDateTime end;
 
     private boolean isBillable;

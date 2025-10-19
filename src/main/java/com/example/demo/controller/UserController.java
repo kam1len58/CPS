@@ -25,17 +25,7 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/api")
 public class UserController {
-    private List<User> users = new ArrayList<>(Arrays.asList(
-            new User(1L, "Mickey", "MICKEY2005", true,
-                    Set.of(new Role(1L, "STUDENT", Set.of(new Permission(1l, "READ"), new Permission(2l,
-                            "CREATE"))))),
-            new User(2L, "Kendal", "0091LADNEK", false,
-                    Set.of(new Role(2L, "TEACHER", Set.of(new Permission(1l, "READ"), new Permission(2l, "CREATE"),
-                            new Permission(3l, "CHECKED_STUDENT"), new Permission(4l, "SENT_COMMENTS_STUDENT"))))),
-            new User(3L, "SARA", "S23A24R25A26", false,
-                    Set.of(new Role(3L, "ADMIN", Set.of(new Permission(1l, "READ_ALL"), new Permission(2l, "CREATE"),
-                            new Permission(3l, "CHECKED_ALL"), new Permission(4l, "DELETE_USER"),
-                            new Permission(5l, "ADD_USER"), new Permission(6l, "UPPDATE_SYSTEM")))))));
+    private List<User> users = new ArrayList<>();
 
     @GetMapping("/user")
     public List<User> getUsers() {
