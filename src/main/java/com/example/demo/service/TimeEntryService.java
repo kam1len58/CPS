@@ -5,8 +5,8 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.demo.enums.TaskType;
 import com.example.demo.model.Student;
-import com.example.demo.model.TaskType;
 import com.example.demo.model.TimeEntry;
 import com.example.demo.repository.StudentRepository;
 import com.example.demo.repository.TimeEntryRepository;

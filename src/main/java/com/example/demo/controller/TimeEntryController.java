@@ -7,8 +7,8 @@ import java.util.List;
 
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.enums.TaskType;
 import com.example.demo.model.Student;
-import com.example.demo.model.TaskType;
 import com.example.demo.model.TimeEntry;
 import com.example.demo.service.StudentService;
 import com.example.demo.service.TimeEntryService;

@@ -2,8 +2,8 @@ package com.example.demo.specifications;
 
 import org.springframework.data.jpa.domain.Specification;
 
+import com.example.demo.enums.TaskType;
 import com.example.demo.model.Student;
-import com.example.demo.model.TaskType;
 import com.example.demo.model.TimeEntry;
 
 public class TimeEntrySpecifications {
