@@ -31,7 +31,7 @@ spring:
             ddl-auto: update
 ---
 jwt:
-    secret: XX
+    secret: 72beb6128ddee7960cbed3a6afe9ab00
     access:
         duration:
             minute: 5
@@ -39,6 +39,6 @@ jwt:
         cookie-name: access-token
     refresh:
         duration:
-            day: 7
+            days: 7
             second: 604800
         cookie-name: refresh-token

@@ -31,10 +31,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         Cookie[] cookies = request.getCookies();
         String token = "";
-        for (Cookie cookie : cookies) {
-            if (accessCookieName.equals(cookie.getName())) {
-                token = cookie.getValue();
-                break;
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (accessCookieName.equals(cookie.getName())) {
+                    token = cookie.getValue();
+                    break;
+                }
             }
         }
 
