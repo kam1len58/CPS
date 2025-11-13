@@ -30,7 +30,6 @@ import lombok.RequiredArgsConstructor;
 @Service
 public class JwtTokenProvider {
 
-    private final TimeEntryController timeEntryController;
     @Value("${jwt.secret}")
     private String key;
 
