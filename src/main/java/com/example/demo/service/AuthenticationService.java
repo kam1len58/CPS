@@ -10,11 +10,14 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.dto.ChangePasswordRequestDto;
 import com.example.demo.dto.LoginRequestDto;
 import com.example.demo.dto.LoginResponseDTO;
 import com.example.demo.dto.UserLoggedDto;
@@ -35,6 +38,7 @@ public class AuthenticationService {
     private final CookieUtil cookieUtil;
     private final AuthenticationManager authenticationManager;
     private final UserService userService;
+    private final PasswordEncoder passwordEncoder;
 
     @Value("${jwt.access.duration.minute}")
     private long accessDurationMin;
@@ -135,11 +139,38 @@ public class AuthenticationService {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication instanceof AnonymousAuthenticationToken) {
-            throw new RuntimeException("No user");
+            throw new RuntimeException("User is not authenticated");
         }
 
         User user = userService.getUser(authentication.getName());
 
         return UserMapper.userToUserLoggedDto(user);
+    }
+
+    public ResponseEntity<LoginResponseDTO> changePassword(ChangePasswordRequestDto request) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication instanceof AnonymousAuthenticationToken)
+            throw new RuntimeException("User is not authenticated");
+
+        User user = userService.getUser(authentication.getName());
+
+        if (!passwordEncoder.matches(request.oldPassword(), user.getPassword()))
+            throw new BadCredentialsException("Current password is invalid");
+
+        if (!request.newPassword().matches(request.newAgain()))
+            throw new BadCredentialsException("New passwords don't match each other");
+
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+        userService.saveUser(user);
+
+        revokeAllTokens(user);
+        SecurityContextHolder.clearContext();
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.SET_COOKIE, cookieUtil.deleteAccessCookie().toString());
+        headers.add(HttpHeaders.SET_COOKIE, cookieUtil.deleteRefreshCookie().toString());
+
+        return ResponseEntity.ok().headers(headers).body(new LoginResponseDTO(false, null));
     }
 }

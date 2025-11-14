@@ -13,6 +13,7 @@ import com.example.demo.specifications.StudentSpecifications;
 import jakarta.annotation.PostConstruct;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;

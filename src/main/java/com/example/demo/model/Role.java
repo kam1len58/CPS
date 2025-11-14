@@ -29,15 +29,11 @@ public class Role implements GrantedAuthority {
     @NotBlank
     private String name;
 
-    
     @OneToMany(mappedBy = "role")
     private Set<User> users;
 
-
     @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "role_permission",
-    joinColumns = @JoinColumn(name="role_id"),
-    inverseJoinColumns = @JoinColumn(name="permission_id"))
+    @JoinTable(name = "role_permission", joinColumns = @JoinColumn(name = "role_id"), inverseJoinColumns = @JoinColumn(name = "permission_id"))
     private Set<Permission> permissions;
 
     @Override
