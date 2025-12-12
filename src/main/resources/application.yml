@@ -9,6 +9,12 @@ spring:
     config:
         activate:
             on-profile: dev
+    servlet:
+        multipart:
+            location: ${user.dir}/uploads
+            max-file-size: 10MB
+            max-request-size: 10MB
+---
 server:
     port: 8080
 ---
