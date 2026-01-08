@@ -13,6 +13,7 @@ import com.example.demo.model.TimeEntry;
 import com.example.demo.service.StudentService;
 import com.example.demo.service.TimeEntryService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 
 import org.springframework.data.domain.Pageable;
@@ -78,5 +79,20 @@ public class TimeEntryController {
             @RequestParam(required = false) TaskType type,
             @PageableDefault(page = 0, size = 10, sort = "start") Pageable pageable) {
         return ResponseEntity.ok(timeEntryService.getByFilter(studentId, type, pageable));
+    }
+
+    @PostMapping("time/start")
+    public ResponseEntity<TimeEntry> startTracking(
+            @RequestParam Long studentId,
+            @RequestParam TaskType type,
+            @RequestParam(required = false) String description) {
+        TimeEntry entry = timeEntryService.start(studentId, type, description);
+        return ResponseEntity.ok(entry);
+    }
+
+    @PostMapping("time/stop")
+    public ResponseEntity<TimeEntry> stopTracking(@RequestParam Long studentId) {
+        TimeEntry entry = timeEntryService.stop(studentId);
+        return ResponseEntity.ok(entry);
     }
 }

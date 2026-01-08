@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -27,9 +28,11 @@ import org.springframework.data.domain.Page;
 @Transactional(readOnly = true)
 public class TimeEntryService {
     private final TimeEntryRepository timeEntryRepository;
+    private final StudentRepository studentRepository;
 
-    public TimeEntryService(TimeEntryRepository timeEntryRepository) {
+    public TimeEntryService(TimeEntryRepository timeEntryRepository, StudentRepository studentRepository) {
         this.timeEntryRepository = timeEntryRepository;
+        this.studentRepository = studentRepository;
     }
 
     @PostConstruct
@@ -90,5 +93,43 @@ public class TimeEntryService {
 
     public Page<TimeEntry> getByFilter(Long studentId, TaskType type, Pageable pageable) {
         return timeEntryRepository.findAll(TimeEntrySpecifications.filter(studentId, type), pageable);
+    }
+
+    @Transactional
+    @CacheEvict(value = { "timeEntries", "timeEntry" }, allEntries = true)
+    public TimeEntry start(Long studentId, TaskType type, String description) {
+        if (timeEntryRepository.findFirstByStudentIdAndEndIsNull(studentId).isPresent()) {
+            throw new IllegalStateException("У студента ID=" + studentId + " уже есть активная запись времени");
+        }
+
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new IllegalArgumentException("Студент с ID=" + studentId + " не найден"));
+
+        TimeEntry entry = new TimeEntry();
+        entry.setStudent(student);
+        entry.setType(type);
+        entry.setDescription(description != null ? description : "");
+        entry.setStart(LocalDateTime.now());
+        entry.setEnd(null);
+        entry.setBillable(true);
+
+        return timeEntryRepository.save(entry);
+    }
+
+    @Transactional
+    @CacheEvict(value = { "timeEntries", "timeEntry" }, allEntries = true)
+    public TimeEntry stop(Long studentId) {
+        TimeEntry activeEntry = timeEntryRepository
+                .findFirstByStudentIdAndEndIsNull(studentId)
+                .orElseThrow(() -> new IllegalStateException("Нет активной записи для студента ID=" + studentId));
+
+        activeEntry.setEnd(LocalDateTime.now());
+
+        if (activeEntry.getEnd().isBefore(activeEntry.getStart())) {
+            throw new IllegalArgumentException("Время окончания не может быть раньше начала");
+        }
+
+        return timeEntryRepository.save(activeEntry);
+
     }
 }

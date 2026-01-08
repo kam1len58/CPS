@@ -40,7 +40,7 @@ public class TimeEntry {
     @Column(nullable = false)
     private LocalDateTime start;
 
-    @Column(name = "end_time", nullable = false)
+    @Column(name = "end_time", nullable = true)
     private LocalDateTime end;
 
     private boolean isBillable;
