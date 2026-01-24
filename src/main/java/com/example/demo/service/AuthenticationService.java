@@ -26,6 +26,7 @@ import com.example.demo.mapper.UserMapper;
 import com.example.demo.model.Token;
 import com.example.demo.model.User;
 import com.example.demo.repository.TokenRepository;
+import com.example.demo.repository.UserRepository;
 import com.example.demo.util.CookieUtil;
 
 import lombok.RequiredArgsConstructor;
@@ -39,6 +40,7 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final UserService userService;
     private final PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
 
     @Value("${jwt.access.duration.minute}")
     private long accessDurationMin;
@@ -158,11 +160,14 @@ public class AuthenticationService {
         if (!passwordEncoder.matches(request.oldPassword(), user.getPassword()))
             throw new BadCredentialsException("Current password is invalid");
 
-        if (!request.newPassword().matches(request.newAgain()))
+        if (!request.newPassword().equals(request.newAgain()))
             throw new BadCredentialsException("New passwords don't match each other");
 
+        // Обновляем пароль напрямую
         user.setPassword(passwordEncoder.encode(request.newPassword()));
-        userService.saveUser(user);
+
+        // Используем метод save репозитория напрямую
+        userRepository.save(user);
 
         revokeAllTokens(user);
         SecurityContextHolder.clearContext();

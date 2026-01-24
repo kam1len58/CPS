@@ -1,12 +1,16 @@
 package com.example.demo.service;
 
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.time.temporal.TemporalAdjuster;
+import java.time.temporal.TemporalAdjusters;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.enums.TaskType;
+import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.model.Student;
 import com.example.demo.model.TimeEntry;
 import com.example.demo.repository.StudentRepository;
@@ -52,9 +56,18 @@ public class TimeEntryService {
     @Transactional
     @CacheEvict(value = { "timeEntries", "timeEntry" }, allEntries = true)
     public TimeEntry create(TimeEntry timeEntry) {
+        // Проверяем студента
+        Student student = studentRepository.findById(timeEntry.getStudent().getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Студент не найден"));
+
+        // Устанавливаем реального студента
+        timeEntry.setStudent(student);
+
+        // Сохраняем пришедший объект (не создаем новый)
         return timeEntryRepository.save(timeEntry);
     }
 
+    @Transactional(readOnly = true)
     @Cacheable(value = "timeEntry", key = "#id")
     public TimeEntry getById(Long id) {
         return timeEntryRepository.findById(id).orElse(null);
@@ -131,5 +144,11 @@ public class TimeEntryService {
 
         return timeEntryRepository.save(activeEntry);
 
+    }
+
+    public List<TimeEntry> getWeeklyEntries(Long studentId) {
+        LocalDateTime endWeek = LocalDateTime.now();
+        LocalDateTime startWeek = endWeek.minusDays(7);
+        return timeEntryRepository.findByStudentIdAndStartBetween(studentId, startWeek, endWeek);
     }
 }

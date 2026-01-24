@@ -5,17 +5,14 @@ import org.springframework.data.jpa.domain.Specification;
 import com.example.demo.model.Student;
 
 public class StudentSpecifications {
-    private static Specification<Student> nameLike(String name) {
-        return (root, query, criterialBuilder) -> {
+    public static Specification<Student> filter(String name) {
+        return (root, query, criteriaBuilder) -> {
             if (name == null || name.trim().isEmpty()) {
-                return criterialBuilder.conjunction();
+                return criteriaBuilder.conjunction(); // без фильтра
             }
-            return criterialBuilder.like(criterialBuilder.lower(root.get("name")),
+            return criteriaBuilder.like(
+                    criteriaBuilder.lower(root.get("name")),
                     "%" + name.trim().toLowerCase() + "%");
         };
-    }
-
-    public static Specification<Student> filter(String name) {
-        return Specification.allOf(nameLike(name));
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.demo.model.Student;
 
 import com.example.demo.repository.StudentRepository;
+import com.example.demo.repository.TimeEntryRepository;
 import com.example.demo.specifications.StudentSpecifications;
 
 import jakarta.annotation.PostConstruct;
@@ -20,12 +21,14 @@ import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 
 @Service
-@Transactional(readOnly = true)
+
 public class StudentService {
     private final StudentRepository studentRepository;
+    private final TimeEntryRepository timeEntryRepository;
 
-    public StudentService(StudentRepository studentRepository) {
+    public StudentService(StudentRepository studentRepository, TimeEntryRepository timeEntryRepository) {
         this.studentRepository = studentRepository;
+        this.timeEntryRepository = timeEntryRepository;
     }
 
     @PostConstruct
@@ -48,32 +51,41 @@ public class StudentService {
         return studentRepository.save(student);
     }
 
-    @Cacheable(value = "student", key = "#id")
+    @Transactional(readOnly = true)
+    // @Cacheable(value = "student", key = "#id")
     public Student getById(Long id) {
         return studentRepository.findById(id).orElse(null);
     }
 
     @Caching(evict = {
             @CacheEvict(value = "students", allEntries = true),
-            @CacheEvict(value = { "students", "student" }, key = "#id")
+            @CacheEvict(value = "student", key = "#id")
     })
     @Transactional
     public Student update(Long id, Student student) {
-        return studentRepository.findById(id).map(existingStudent -> {
-            existingStudent.setName(student.getName());
-            existingStudent.setGroup(student.getGroup());
-            existingStudent.setRecentEntries(student.getRecentEntries());
-            return studentRepository.save(existingStudent);
-        }).orElse(null);
+        Student existingStudent = studentRepository.findById(id).orElse(null);
+
+        if (existingStudent == null) {
+            return null;
+        }
+
+        if (student.getName() != null && !student.getName().isBlank()) {
+            existingStudent.setName(student.getName().trim());
+        }
+
+        existingStudent.setGroup(student.getGroup() != null ? student.getGroup().trim() : null);
+        existingStudent.setRecentEntries(student.getRecentEntries());
+        return studentRepository.save(existingStudent);
     }
 
     @Caching(evict = {
             @CacheEvict(value = "students", allEntries = true),
-            @CacheEvict(value = { "students", "student" }, key = "#id")
+            @CacheEvict(value = "student", key = "#id")
     })
     @Transactional
     public boolean deleteById(Long id) {
         if (studentRepository.existsById(id)) {
+            timeEntryRepository.deleteByStudentId(id);
             studentRepository.deleteById(id);
             return true;
         } else {

@@ -12,7 +12,9 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -24,9 +26,9 @@ public class Student {
     private Long id;
     @NotBlank
     @Size(min = 2, max = 100, message = "demo")
-    @Column(nullable = false, unique = true, length = 100)
+    @Column(nullable = false, length = 100)
     private String name;
-    @Column(name = "student_group", unique = true, nullable = false)
+    @Column(name = "student_group")
     private String group;
     @Transient
     private List<TimeEntry> recentEntries;

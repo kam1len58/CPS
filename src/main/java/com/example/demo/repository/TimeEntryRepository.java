@@ -1,5 +1,7 @@
 package com.example.demo.repository;
 
+import java.sql.Time;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,4 +19,10 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, Long>, Jpa
     Optional<TimeEntry> findFirstByStudentIdAndEndIsNull(Long studentId);
 
     List<TimeEntry> findByType(TaskType type);
+
+    List<TimeEntry> findByStudentIdAndStartBetween(Long studentId,
+            LocalDateTime start,
+            LocalDateTime end);
+
+    void deleteByStudentId(Long studentId);
 }
