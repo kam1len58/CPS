@@ -41,6 +41,7 @@ public class User implements UserDetails {
 
     @OneToMany(mappedBy = "user")
     private Set<Token> tokens;
+    private Long tgBotChatId;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -60,3 +60,28 @@ report:
   watermark:
     enabled: false
     text: "SYSTEM PROJECT TIME TRACKING"
+---
+bot:
+    username: CPS_TimeTrackerBot
+    token: 8591981372:AAFIqUN7tLgj_nw5npxCKLnukR2WeeHiqUE
+    adminChatId: 618114586
+
+---
+logging:
+  file:
+    name: logs/time-tracking-system.log
+  level:
+    com.example.demo: INFO
+    com.example.demo.controller: DEBUG
+    com.example.demo.service: DEBUG
+    org.springframework.web: WARN
+    org.hibernate: WARN
+  
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+    file: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  
+  logback:
+    rollingpolicy:
+      max-file-size: 10MB
+      max-history: 30

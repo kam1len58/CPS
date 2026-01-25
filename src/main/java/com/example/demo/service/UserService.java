@@ -4,7 +4,8 @@ import java.util.List;
 
 import com.example.demo.repository.RoleRepository;
 import com.example.demo.repository.UserRepository;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,30 +24,44 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final RoleRepository roleRepository;
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     @Transactional(readOnly = true)
     public List<UserDTO> getUsers() {
-        return userRepository.findAll().stream().map(UserMapper::userToUserDto).toList();
+        List<UserDTO> userList = userRepository.findAll().stream().map(UserMapper::userToUserDto).toList();
+        logger.info("Successfully founded {} user", userList.size());
+        return userList;
     }
 
     @Transactional(readOnly = true)
     public UserDTO getUser(Long id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User with id " + id + "not found"));
+        User user = userRepository.findById(id).orElseThrow(() -> {
+            logger.warn("User with id {} not found", id.toString());
+            return new ResourceNotFoundException("User with id " + id + "not found");
+        });
+        logger.info("User with id {} successfully found", id.toString());
         return UserMapper.userToUserDto(user);
     }
 
     @Transactional(readOnly = true)
     public UserDTO getUserDTO(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User with username " + username + "not found"));
+        User user = userRepository.findByUsername(username).orElseThrow(() -> {
+            logger.warn("User with username {} not found", username);
+            return new ResourceNotFoundException("User with username " + username + "not found");
+        }); // Возврат сущности Дто пользователя с указанным именем. Также есть обработка
+            // исключений
+        logger.info("User with username {} successfully found", username);
         return UserMapper.userToUserDto(user);
     }
 
     @Transactional(readOnly = true)
     public User getUser(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User with username " + username + "not found"));
+        User user = userRepository.findByUsername(username).orElseThrow(() -> {
+            logger.warn("User with username {} not found", username);
+            return new ResourceNotFoundException("User with username " + username + "not found");
+        }); // Возврат сущности пользователя с указанным именем. Также есть обработка
+            // исключений
+        logger.info("User with username {} successfully found", username);
         return user;
     }
 
@@ -61,7 +76,7 @@ public class UserService {
         Role defaultRole = roleRepository.findByName("USER")
                 .orElseThrow(() -> new IllegalStateException("Default role 'USER' not found"));
         user.setRole(defaultRole);
-
+        logger.info("User with username {} successfully saved", user.getUsername());
         return userRepository.save(user);
     }
 }

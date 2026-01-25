@@ -70,34 +70,60 @@ public class StudentService {
     @Transactional(readOnly = true)
     @Cacheable(value = "students", key = "'allStudents'")
     public List<Student> getAll() {
-        logger.debug("Fetching all students from database");
-        return studentRepository.findAll();
+        try {
+            logger.debug("Fetching all students from database");
+            List<Student> students = studentRepository.findAll();
+            logger.info("Retrieved {} students from database", students.size());
+            return students;
+        } catch (Exception e) {
+            logger.error("Error fetching all students: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
     @Transactional(readOnly = true)
     public List<Student> getByName(String name) {
-        logger.debug("Fetching students by name: {}", name);
-        return studentRepository.findAllByName(name);
+        try {
+            logger.debug("Fetching students by name: {}", name);
+            List<Student> students = studentRepository.findAllByName(name);
+            logger.info("Found {} students with name: {}", students.size(), name);
+            return students;
+        } catch (Exception e) {
+            logger.error("Error fetching students by name {}: {}", name, e.getMessage(), e);
+            throw e;
+        }
     }
 
     @Transactional
     @CacheEvict(value = { "students", "student" }, allEntries = true)
     public Student create(Student student) {
-        logger.info("Creating new student: {}", student.getName());
-        Student savedStudent = studentRepository.save(student);
-        logger.debug("Student created with ID: {}", savedStudent.getId());
-        return savedStudent;
+        try {
+            logger.info("Creating new student: {}", student.getName());
+            Student savedStudent = studentRepository.save(student);
+            logger.info("Student created with ID: {}, Name: {}", savedStudent.getId(), savedStudent.getName());
+            return savedStudent;
+        } catch (Exception e) {
+            logger.error("Error creating student {}: {}", student.getName(), e.getMessage(), e);
+            throw e;
+        }
     }
 
     @Transactional(readOnly = true)
     @Cacheable(value = "student", key = "#id")
     public Student getById(Long id) {
-        logger.debug("Fetching student by ID: {}", id);
-        return studentRepository.findById(id)
-                .orElseThrow(() -> {
-                    logger.warn("Student not found with ID: {}", id);
-                    return new RuntimeException("Student not found with ID: " + id);
-                });
+        try {
+            logger.debug("Fetching student by ID: {}", id);
+            Student student = studentRepository.findById(id)
+                    .orElseThrow(() -> {
+                        logger.warn("Student not found with ID: {}", id);
+                        return new RuntimeException("Student not found with ID: " + id);
+                    });
+            logger.debug("Student found: {} (ID: {})", student.getName(), student.getId());
+            return student;
+        } catch (Exception e) {
+            logger.error("Error fetching student with ID {}: {}", id, e.getMessage(), e);
+            throw e;
+        }
     }
 
     @Caching(evict = {
@@ -106,24 +132,33 @@ public class StudentService {
     })
     @Transactional
     public Student update(Long id, Student student) {
-        logger.info("Updating student with ID: {}", id);
-        Student existingStudent = studentRepository.findById(id)
-                .orElseThrow(() -> {
-                    logger.warn("Student not found for update with ID: {}", id);
-                    return new RuntimeException("Student not found with ID: " + id);
-                });
+        try {
+            logger.info("Updating student with ID: {}", id);
+            Student existingStudent = studentRepository.findById(id)
+                    .orElseThrow(() -> {
+                        logger.warn("Student not found for update with ID: {}", id);
+                        return new RuntimeException("Student not found with ID: " + id);
+                    });
 
-        if (student.getName() != null && !student.getName().isBlank()) {
-            existingStudent.setName(student.getName().trim());
+            if (student.getName() != null && !student.getName().isBlank()) {
+                logger.debug("Updating name for student ID {}: {} -> {}",
+                        id, existingStudent.getName(), student.getName());
+                existingStudent.setName(student.getName().trim());
+            }
+
+            if (student.getGroup() != null) {
+                logger.debug("Updating group for student ID {}: {} -> {}",
+                        id, existingStudent.getGroup(), student.getGroup());
+                existingStudent.setGroup(student.getGroup().trim());
+            }
+
+            Student updatedStudent = studentRepository.save(existingStudent);
+            logger.info("Student updated successfully: {} (ID: {})", updatedStudent.getName(), updatedStudent.getId());
+            return updatedStudent;
+        } catch (Exception e) {
+            logger.error("Error updating student with ID {}: {}", id, e.getMessage(), e);
+            throw e;
         }
-
-        if (student.getGroup() != null) {
-            existingStudent.setGroup(student.getGroup().trim());
-        }
-
-        Student updatedStudent = studentRepository.save(existingStudent);
-        logger.debug("Student updated successfully: {}", updatedStudent.getId());
-        return updatedStudent;
     }
 
     @Caching(evict = {
@@ -132,26 +167,39 @@ public class StudentService {
     })
     @Transactional
     public boolean deleteById(Long id) {
-        logger.info("Deleting student with ID: {}", id);
-        if (studentRepository.existsById(id)) {
-            timeEntryRepository.deleteByStudentId(id);
-            studentRepository.deleteById(id);
-            logger.debug("Student deleted successfully: {}", id);
-            return true;
-        } else {
-            logger.warn("Student not found for deletion with ID: {}", id);
-            return false;
+        try {
+            logger.info("Deleting student with ID: {}", id);
+            if (studentRepository.existsById(id)) {
+                logger.debug("Deleting time entries for student ID: {}", id);
+                timeEntryRepository.deleteByStudentId(id);
+
+                studentRepository.deleteById(id);
+                logger.info("Student deleted successfully: {}", id);
+                return true;
+            } else {
+                logger.warn("Student not found for deletion with ID: {}", id);
+                return false;
+            }
+        } catch (Exception e) {
+            logger.error("Error deleting student with ID {}: {}", id, e.getMessage(), e);
+            throw e;
         }
     }
 
     @Transactional(readOnly = true)
     public Page<Student> getByFilter(String name, Pageable pageable) {
-        logger.debug("Filtering students with name: {}, page: {}, size: {}",
-                name, pageable.getPageNumber(), pageable.getPageSize());
-        return studentRepository.findAll(StudentSpecifications.filter(name), pageable);
+        try {
+            logger.debug("Filtering students with name: {}, page: {}, size: {}",
+                    name, pageable.getPageNumber(), pageable.getPageSize());
+            Page<Student> result = studentRepository.findAll(StudentSpecifications.filter(name), pageable);
+            logger.info("Filtered students: {} records found", result.getTotalElements());
+            return result;
+        } catch (Exception e) {
+            logger.error("Error filtering students with name {}: {}", name, e.getMessage(), e);
+            throw e;
+        }
     }
 
-    // Импорт студентов из XML файла
     private void validateFile(MultipartFile file) {
         if (file.isEmpty()) {
             logger.warn("Attempted to upload empty file");
@@ -169,12 +217,14 @@ public class StudentService {
     @CacheEvict(value = "students", allEntries = true)
     public List<Student> importStudentsFromXmlFile(MultipartFile file) {
         logger.info("Starting student import from XML file: {}", file.getOriginalFilename());
-        validateFile(file);
 
         try {
+            validateFile(file);
+
             // Создаем директорию для импорта, если не существует
             Path importDir = Paths.get(uploadLocation, "imports", "students");
             Files.createDirectories(importDir);
+            logger.debug("Import directory created: {}", importDir);
 
             // Сохраняем файл с timestamp в имени
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH-mm-ss"));
@@ -193,6 +243,8 @@ public class StudentService {
                 logger.info("Found {} students in XML file", studentsToImport.size());
 
                 List<Student> importedStudents = new ArrayList<>();
+                int successCount = 0;
+                int errorCount = 0;
 
                 for (StudentImportDto.StudentDto studentDto : studentsToImport) {
                     try {
@@ -206,6 +258,7 @@ public class StudentService {
 
                             Student savedStudent = studentRepository.save(newStudent);
                             importedStudents.add(savedStudent);
+                            successCount++;
                             logger.debug("Student imported: {} (ID: {})",
                                     savedStudent.getName(), savedStudent.getId());
                         } else {
@@ -215,16 +268,19 @@ public class StudentService {
 
                             Student updatedStudent = studentRepository.save(existingStudent);
                             importedStudents.add(updatedStudent);
+                            successCount++;
                             logger.debug("Student updated: {} (ID: {})",
                                     updatedStudent.getName(), updatedStudent.getId());
                         }
                     } catch (Exception e) {
+                        errorCount++;
                         logger.error("Error importing student {}: {}",
                                 studentDto.getName(), e.getMessage(), e);
                     }
                 }
 
-                logger.info("Successfully imported {} students from XML file", importedStudents.size());
+                logger.info("Import completed: {} successful, {} failed, total {}",
+                        successCount, errorCount, importedStudents.size());
                 return importedStudents;
             }
         } catch (Exception e) {
@@ -233,25 +289,24 @@ public class StudentService {
         }
     }
 
-    // Экспорт студентов в XML
     @Transactional(readOnly = true)
     public StudentReportsExportWrapper exportStudentsToXml() {
         logger.info("Exporting students to XML format");
 
         try {
             List<Student> students = studentRepository.findAll();
+            logger.debug("Retrieved {} students for export", students.size());
 
             StudentReportsExportWrapper exportWrapper = new StudentReportsExportWrapper();
             exportWrapper.setTotalReports(students.size());
 
-            // Здесь нужно преобразовать Student в StudentReportDto
             List<StudentReportDto> reportDtos = students.stream()
                     .map(this::convertToReportDto)
                     .toList();
 
             exportWrapper.setReports(reportDtos);
 
-            logger.debug("Exported {} students to XML wrapper", students.size());
+            logger.info("Successfully exported {} students to XML wrapper", students.size());
             return exportWrapper;
         } catch (Exception e) {
             logger.error("Error exporting students to XML: {}", e.getMessage(), e);
@@ -273,7 +328,6 @@ public class StudentService {
                 0L);
     }
 
-    // Генерация PDF отчета по студентам
     @Transactional(readOnly = true)
     public byte[] generateStudentsPdfReport() {
         logger.info("Starting students PDF report generation");
@@ -340,15 +394,15 @@ public class StudentService {
 
             JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
 
-            logger.info("Students PDF report successfully created");
-            return JasperExportManager.exportReportToPdf(jasperPrint);
+            byte[] pdfBytes = JasperExportManager.exportReportToPdf(jasperPrint);
+            logger.info("Students PDF report successfully created, size: {} bytes", pdfBytes.length);
+            return pdfBytes;
         } catch (Exception e) {
             logger.error("Error creating students PDF report: {}", e.getMessage(), e);
             throw new RuntimeException("Error creating report about students", e);
         }
     }
 
-    // Дополнительный метод для экспорта с time entries
     @Transactional(readOnly = true)
     public byte[] generateStudentTimeEntriesPdfReport(Long studentId) {
         logger.info("Starting time entries PDF report for student ID: {}", studentId);
@@ -366,7 +420,10 @@ public class StudentService {
                         return new RuntimeException("Student not found with ID: " + studentId);
                     });
 
+            logger.debug("Student found for report: {} (ID: {})", student.getName(), student.getId());
+
             List<TimeEntry> timeEntries = timeEntryRepository.findTop5ByStudent_IdOrderByIdDesc(studentId);
+            logger.debug("Retrieved {} time entries for student", timeEntries.size());
 
             List<StudentReportDto> reportData = timeEntries.stream()
                     .map(entry -> {
@@ -396,7 +453,7 @@ public class StudentService {
                     })
                     .toList();
 
-            logger.debug("Time entries data retrieved: {} records", reportData.size());
+            logger.debug("Time entries data converted: {} records", reportData.size());
 
             JRBeanCollectionDataSource dataSource = new JRBeanCollectionDataSource(reportData);
 
@@ -417,8 +474,10 @@ public class StudentService {
 
             JasperPrint jasperPrint = JasperFillManager.fillReport(jasperReport, parameters, dataSource);
 
-            logger.info("Time entries PDF report successfully created for student ID: {}", studentId);
-            return JasperExportManager.exportReportToPdf(jasperPrint);
+            byte[] pdfBytes = JasperExportManager.exportReportToPdf(jasperPrint);
+            logger.info("Time entries PDF report successfully created for student ID: {}, size: {} bytes",
+                    studentId, pdfBytes.length);
+            return pdfBytes;
         } catch (Exception e) {
             logger.error("Error creating time entries PDF report: {}", e.getMessage(), e);
             throw new RuntimeException("Error creating time entries report", e);
