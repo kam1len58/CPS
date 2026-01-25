@@ -56,14 +56,14 @@ public class TimeEntryService {
     @Transactional
     @CacheEvict(value = { "timeEntries", "timeEntry" }, allEntries = true)
     public TimeEntry create(TimeEntry timeEntry) {
-        // Проверяем студента
+
         Student student = studentRepository.findById(timeEntry.getStudent().getId())
                 .orElseThrow(() -> new ResourceNotFoundException("Студент не найден"));
 
-        // Устанавливаем реального студента
+
         timeEntry.setStudent(student);
 
-        // Сохраняем пришедший объект (не создаем новый)
+
         return timeEntryRepository.save(timeEntry);
     }
 

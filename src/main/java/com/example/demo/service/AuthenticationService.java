@@ -163,10 +163,10 @@ public class AuthenticationService {
         if (!request.newPassword().equals(request.newAgain()))
             throw new BadCredentialsException("New passwords don't match each other");
 
-        // Обновляем пароль напрямую
+  
         user.setPassword(passwordEncoder.encode(request.newPassword()));
 
-        // Используем метод save репозитория напрямую
+  
         userRepository.save(user);
 
         revokeAllTokens(user);

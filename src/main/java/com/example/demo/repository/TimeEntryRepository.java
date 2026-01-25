@@ -25,4 +25,6 @@ public interface TimeEntryRepository extends JpaRepository<TimeEntry, Long>, Jpa
             LocalDateTime end);
 
     void deleteByStudentId(Long studentId);
+
+    List<TimeEntry> findTop5ByStudent_IdOrderByIdDesc(Long studentId);
 }

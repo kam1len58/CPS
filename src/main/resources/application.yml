@@ -48,3 +48,15 @@ jwt:
             days: 7
             second: 604800
         cookie-name: refresh-token
+
+---
+report:
+  storage:
+    path: ./reports/
+    retention-days: 30
+  default:
+    font-family: Arial
+    font-size: 12
+  watermark:
+    enabled: false
+    text: "SYSTEM PROJECT TIME TRACKING"

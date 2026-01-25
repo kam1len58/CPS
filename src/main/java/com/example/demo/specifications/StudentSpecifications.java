@@ -8,7 +8,7 @@ public class StudentSpecifications {
     public static Specification<Student> filter(String name) {
         return (root, query, criteriaBuilder) -> {
             if (name == null || name.trim().isEmpty()) {
-                return criteriaBuilder.conjunction(); // без фильтра
+                return criteriaBuilder.conjunction();
             }
             return criteriaBuilder.like(
                     criteriaBuilder.lower(root.get("name")),

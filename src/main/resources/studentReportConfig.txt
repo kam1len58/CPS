@@ -1,0 +1,480 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" 
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports 
+              http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" 
+              name="StudentTimeReport" pageWidth="595" pageHeight="842" 
+              columnWidth="555" leftMargin="20" rightMargin="20" 
+              topMargin="20" bottomMargin="20">
+    
+    <!-- Стили для разных типов задач -->
+    <style name="StudyStyle" mode="Opaque" forecolor="#3498DB" isBold="true"/>
+    <style name="WorkStyle" mode="Opaque" forecolor="#2ECC71" isBold="true"/>
+    <style name="PersonalStyle" mode="Opaque" forecolor="#9B59B6" isBold="true"/>
+    <style name="OtherStyle" mode="Opaque" forecolor="#E67E22" isBold="true"/>
+    
+    <!-- Параметры отчета -->
+    <parameter name="systemName" class="java.lang.String" isForPrompting="false">
+        <defaultValueExpression><![CDATA["Student Time Management System"]]></defaultValueExpression>
+    </parameter>
+    <parameter name="totalStudents" class="java.lang.Integer"/>
+    <parameter name="totalHours" class="java.lang.Double"/>
+    <parameter name="totalBillableHours" class="java.lang.Double"/>
+    
+    <!-- Поля данных -->
+    <field name="id" class="java.lang.Long"/>
+    <field name="studentId" class="java.lang.Long"/>
+    <field name="studentName" class="java.lang.String"/>
+    <field name="studentGroup" class="java.lang.String"/>
+    <field name="type" class="java.lang.String"/>
+    <field name="description" class="java.lang.String"/>
+    <field name="start" class="java.lang.String"/>
+    <field name="end" class="java.lang.String"/>
+    <field name="billable" class="java.lang.Boolean"/>
+    <field name="durationMinutes" class="java.lang.Long"/>
+    
+    <!-- Переменные -->
+    <variable name="REPORT_COUNT" class="java.lang.Integer" calculation="Count"/>
+    <variable name="billableCount" class="java.lang.Integer" calculation="Count">
+        <variableExpression><![CDATA[$F{billable} ? 1 : 0]]></variableExpression>
+        <initialValueExpression><![CDATA[0]]></initialValueExpression>
+    </variable>
+    <variable name="totalMinutes" class="java.lang.Long" calculation="Sum">
+        <variableExpression><![CDATA[$F{durationMinutes} != null ? $F{durationMinutes} : 0]]></variableExpression>
+        <initialValueExpression><![CDATA[0]]></initialValueExpression>
+    </variable>
+    
+    <!-- Заголовок отчета -->
+    <title>
+        <band height="120">
+            <!-- Главный заголовок -->
+            <staticText>
+                <reportElement x="0" y="0" width="555" height="40"/>
+                <textElement textAlignment="Center">
+                    <font size="20" isBold="true" pdfFontName="Helvetica-Bold"/>
+                </textElement>
+                <text><![CDATA[Отчет по учету времени студентов]]></text>
+            </staticText>
+            
+            <!-- Дата формирования -->
+            <textField>
+                <reportElement x="0" y="45" width="555" height="20"/>
+                <textElement textAlignment="Center">
+                    <font size="12" pdfFontName="Helvetica"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Дата формирования: " + new java.text.SimpleDateFormat("dd.MM.yyyy HH:mm:ss").format(new java.util.Date())]]></textFieldExpression>
+            </textField>
+            
+            <!-- Информация о системе -->
+            <textField>
+                <reportElement x="0" y="65" width="555" height="20"/>
+                <textElement textAlignment="Center">
+                    <font size="10" isItalic="true" pdfFontName="Helvetica-Oblique"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Сгенерировано системой: " + $P{systemName}]]></textFieldExpression>
+            </textField>
+            
+            <!-- Разделительная линия -->
+            <line>
+                <reportElement x="0" y="95" width="555" height="2"/>
+                <graphicElement>
+                    <pen lineWidth="1.0" lineColor="#4A90E2"/>
+                </graphicElement>
+            </line>
+            
+            <!-- Логотип или декоративный элемент -->
+            <staticText>
+                <reportElement x="0" y="100" width="555" height="15"/>
+                <textElement textAlignment="Center">
+                    <font size="8" pdfFontName="Helvetica"/>
+                </textElement>
+                <text><![CDATA[—————————————————————————————————————————————————————————————————————————————]]></text>
+            </staticText>
+        </band>
+    </title>
+    
+    <!-- Заголовки колонок -->
+    <columnHeader>
+        <band height="40">
+            <!-- ID -->
+            <staticText>
+                <reportElement x="0" y="5" width="50" height="35" backcolor="#4A90E2"/>
+                <box>
+                    <topPen lineWidth="1.0"/>
+                    <leftPen lineWidth="1.0"/>
+                    <bottomPen lineWidth="1.0"/>
+                    <rightPen lineWidth="1.0"/>
+                </box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="11" isBold="true" pdfFontName="Helvetica-Bold"/>
+                </textElement>
+                <text><![CDATA[ID]]></text>
+            </staticText>
+            
+            <!-- Студент -->
+            <staticText>
+                <reportElement x="50" y="5" width="100" height="35" backcolor="#4A90E2"/>
+                <box>
+                    <topPen lineWidth="1.0"/>
+                    <leftPen lineWidth="1.0"/>
+                    <bottomPen lineWidth="1.0"/>
+                    <rightPen lineWidth="1.0"/>
+                </box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="11" isBold="true" pdfFontName="Helvetica-Bold"/>
+                </textElement>
+                <text><![CDATA[Студент]]></text>
+            </staticText>
+            
+            <!-- Группа -->
+            <staticText>
+                <reportElement x="150" y="5" width="80" height="35" backcolor="#4A90E2"/>
+                <box>
+                    <topPen lineWidth="1.0"/>
+                    <leftPen lineWidth="1.0"/>
+                    <bottomPen lineWidth="1.0"/>
+                    <rightPen lineWidth="1.0"/>
+                </box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="11" isBold="true" pdfFontName="Helvetica-Bold"/>
+                </textElement>
+                <text><![CDATA[Группа]]></text>
+            </staticText>
+            
+            <!-- Тип задачи -->
+            <staticText>
+                <reportElement x="230" y="5" width="90" height="35" backcolor="#4A90E2"/>
+                <box>
+                    <topPen lineWidth="1.0"/>
+                    <leftPen lineWidth="1.0"/>
+                    <bottomPen lineWidth="1.0"/>
+                    <rightPen lineWidth="1.0"/>
+                </box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="11" isBold="true" pdfFontName="Helvetica-Bold"/>
+                </textElement>
+                <text><![CDATA[Тип задачи]]></text>
+            </staticText>
+            
+            <!-- Описание -->
+            <staticText>
+                <reportElement x="320" y="5" width="120" height="35" backcolor="#4A90E2"/>
+                <box>
+                    <topPen lineWidth="1.0"/>
+                    <leftPen lineWidth="1.0"/>
+                    <bottomPen lineWidth="1.0"/>
+                    <rightPen lineWidth="1.0"/>
+                </box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="11" isBold="true" pdfFontName="Helvetica-Bold"/>
+                </textElement>
+                <text><![CDATA[Описание]]></text>
+            </staticText>
+            
+            <!-- Время -->
+            <staticText>
+                <reportElement x="440" y="5" width="80" height="35" backcolor="#4A90E2"/>
+                <box>
+                    <topPen lineWidth="1.0"/>
+                    <leftPen lineWidth="1.0"/>
+                    <bottomPen lineWidth="1.0"/>
+                    <rightPen lineWidth="1.0"/>
+                </box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="11" isBold="true" pdfFontName="Helvetica-Bold"/>
+                </textElement>
+                <text><![CDATA[Время]]></text>
+            </staticText>
+            
+            <!-- Оплачиваемый -->
+            <staticText>
+                <reportElement x="520" y="5" width="35" height="35" backcolor="#4A90E2"/>
+                <box>
+                    <topPen lineWidth="1.0"/>
+                    <leftPen lineWidth="1.0"/>
+                    <bottomPen lineWidth="1.0"/>
+                    <rightPen lineWidth="1.0"/>
+                </box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="11" isBold="true" pdfFontName="Helvetica-Bold"/>
+                </textElement>
+                <text><![CDATA[$]]></text>
+            </staticText>
+        </band>
+    </columnHeader>
+    
+    <!-- Данные -->
+    <detail>
+        <band height="35">
+            <!-- Чередующийся фон строк -->
+            <rectangle>
+                <reportElement x="0" y="0" width="555" height="35" mode="Opaque">
+                    <printWhenExpression><![CDATA[$V{REPORT_COUNT} % 2 == 0]]></printWhenExpression>
+                </reportElement>
+                <graphicElement>
+                    <pen lineWidth="0.0"/>
+                    <fillColor><![CDATA[new java.awt.Color(248, 248, 248)]]></fillColor>
+                </graphicElement>
+            </rectangle>
+            
+            <!-- ID -->
+            <textField>
+                <reportElement x="0" y="0" width="50" height="35"/>
+                <box>
+                    <topPen lineWidth="0.5"/>
+                    <leftPen lineWidth="0.5"/>
+                    <bottomPen lineWidth="0.5"/>
+                    <rightPen lineWidth="0.5"/>
+                </box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="9" pdfFontName="Helvetica"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{id}]]></textFieldExpression>
+            </textField>
+            
+            <!-- Имя студента -->
+            <textField>
+                <reportElement x="50" y="0" width="100" height="35"/>
+                <box>
+                    <topPen lineWidth="0.5"/>
+                    <leftPen lineWidth="0.5"/>
+                    <bottomPen lineWidth="0.5"/>
+                    <rightPen lineWidth="0.5"/>
+                </box>
+                <textElement verticalAlignment="Middle">
+                    <font size="9" pdfFontName="Helvetica"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{studentName}]]></textFieldExpression>
+            </textField>
+            
+            <!-- Группа -->
+            <textField>
+                <reportElement x="150" y="0" width="80" height="35"/>
+                <box>
+                    <topPen lineWidth="0.5"/>
+                    <leftPen lineWidth="0.5"/>
+                    <bottomPen lineWidth="0.5"/>
+                    <rightPen lineWidth="0.5"/>
+                </box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="9" pdfFontName="Helvetica"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{studentGroup} != null ? $F{studentGroup} : "—"]]></textFieldExpression>
+            </textField>
+            
+            <!-- Тип задачи с цветовым кодированием -->
+            <textField>
+                <reportElement x="230" y="0" width="90" height="35"/>
+                <box>
+                    <topPen lineWidth="0.5"/>
+                    <leftPen lineWidth="0.5"/>
+                    <bottomPen lineWidth="0.5"/>
+                    <rightPen lineWidth="0.5"/>
+                </box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="9" isBold="true" pdfFontName="Helvetica-Bold">
+                        <conditionalStyle>
+                            <conditionExpression><![CDATA["STUDY".equals($F{type})]]></conditionExpression>
+                            <style forecolor="#3498DB"/>
+                        </conditionalStyle>
+                        <conditionalStyle>
+                            <conditionExpression><![CDATA["WORK".equals($F{type})]]></conditionExpression>
+                            <style forecolor="#2ECC71"/>
+                        </conditionalStyle>
+                        <conditionalStyle>
+                            <conditionExpression><![CDATA["PERSONAL".equals($F{type})]]></conditionExpression>
+                            <style forecolor="#9B59B6"/>
+                        </conditionalStyle>
+                        <conditionalStyle>
+                            <conditionExpression><![CDATA["OTHER".equals($F{type})]]></conditionExpression>
+                            <style forecolor="#E67E22"/>
+                        </conditionalStyle>
+                    </font>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{type}]]></textFieldExpression>
+            </textField>
+            
+            <!-- Описание -->
+            <textField>
+                <reportElement x="320" y="0" width="120" height="35"/>
+                <box>
+                    <topPen lineWidth="0.5"/>
+                    <leftPen lineWidth="0.5"/>
+                    <bottomPen lineWidth="0.5"/>
+                    <rightPen lineWidth="0.5"/>
+                </box>
+                <textElement verticalAlignment="Middle">
+                    <font size="9" pdfFontName="Helvetica"/>
+                </textElement>
+                <textFieldExpression><![CDATA[
+                    $F{description} != null && $F{description}.length() > 25 
+                    ? $F{description}.substring(0, 25) + "..." 
+                    : $F{description}
+                ]]></textFieldExpression>
+            </textField>
+            
+            <!-- Время (длительность) -->
+            <textField>
+                <reportElement x="440" y="0" width="80" height="35"/>
+                <box>
+                    <topPen lineWidth="0.5"/>
+                    <leftPen lineWidth="0.5"/>
+                    <bottomPen lineWidth="0.5"/>
+                    <rightPen lineWidth="0.5"/>
+                </box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="9" pdfFontName="Helvetica"/>
+                </textElement>
+                <textFieldExpression><![CDATA[
+                    $F{durationMinutes} != null && $F{durationMinutes} > 0 
+                    ? ($F{durationMinutes} / 60) + "ч " + ($F{durationMinutes} % 60) + "м" 
+                    : "—"
+                ]]></textFieldExpression>
+            </textField>
+            
+            <!-- Оплачиваемый статус -->
+            <textField>
+                <reportElement x="520" y="0" width="35" height="35"/>
+                <box>
+                    <topPen lineWidth="0.5"/>
+                    <leftPen lineWidth="0.5"/>
+                    <bottomPen lineWidth="0.5"/>
+                    <rightPen lineWidth="0.5"/>
+                </box>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font size="10" isBold="true" pdfFontName="Helvetica-Bold">
+                        <conditionalStyle>
+                            <conditionExpression><![CDATA[$F{billable} == Boolean.TRUE]]></conditionExpression>
+                            <style forecolor="#27AE60"/>
+                        </conditionalStyle>
+                        <conditionalStyle>
+                            <conditionExpression><![CDATA[$F{billable} == Boolean.FALSE]]></conditionExpression>
+                            <style forecolor="#E74C3C"/>
+                        </conditionalStyle>
+                    </font>
+                </textElement>
+                <textFieldExpression><![CDATA[$F{billable} ? "✓" : "✗"]]></textFieldExpression>
+            </textField>
+        </band>
+    </detail>
+    
+    <!-- Итоговая информация -->
+    <summary>
+        <band height="140">
+            <!-- Разделительная линия -->
+            <line>
+                <reportElement x="0" y="10" width="555" height="2"/>
+                <graphicElement>
+                    <pen lineWidth="1.0" lineColor="#4A90E2"/>
+                </graphicElement>
+            </line>
+            
+            <!-- Заголовок статистики -->
+            <staticText>
+                <reportElement x="0" y="20" width="555" height="20"/>
+                <textElement textAlignment="Left">
+                    <font size="12" isBold="true" pdfFontName="Helvetica-Bold"/>
+                </textElement>
+                <text><![CDATA[Сводная статистика:]]></text>
+            </staticText>
+            
+            <!-- Всего записей -->
+            <textField>
+                <reportElement x="20" y="45" width="250" height="15"/>
+                <textElement textAlignment="Left">
+                    <font size="10" pdfFontName="Helvetica"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Всего записей времени: " + $V{REPORT_COUNT}]]></textFieldExpression>
+            </textField>
+            
+            <!-- Количество студентов -->
+            <textField>
+                <reportElement x="20" y="60" width="250" height="15"/>
+                <textElement textAlignment="Left">
+                    <font size="10" pdfFontName="Helvetica"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Количество студентов: " + $P{totalStudents}]]></textFieldExpression>
+            </textField>
+            
+            <!-- Оплачиваемых записей -->
+            <textField>
+                <reportElement x="20" y="75" width="250" height="15"/>
+                <textElement textAlignment="Left">
+                    <font size="10" pdfFontName="Helvetica"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Оплачиваемых записей: " + $V{billableCount}]]></textFieldExpression>
+            </textField>
+            
+            <!-- Общее время -->
+            <textField>
+                <reportElement x="300" y="45" width="250" height="15"/>
+                <textElement textAlignment="Left">
+                    <font size="10" pdfFontName="Helvetica"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Общее время: " + $P{totalHours} + " ч"]]></textFieldExpression>
+            </textField>
+            
+            <!-- Оплачиваемое время -->
+            <textField>
+                <reportElement x="300" y="60" width="250" height="15"/>
+                <textElement textAlignment="Left">
+                    <font size="10" pdfFontName="Helvetica"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Оплачиваемое время: " + $P{totalBillableHours} + " ч"]]></textFieldExpression>
+            </textField>
+            
+            <!-- Среднее время на запись -->
+            <textField>
+                <reportElement x="300" y="75" width="250" height="15"/>
+                <textElement textAlignment="Left">
+                    <font size="10" pdfFontName="Helvetica"/>
+                </textElement>
+                <textFieldExpression><![CDATA[
+                    "Среднее время: " + 
+                    ($V{REPORT_COUNT} > 0 
+                        ? new java.text.DecimalFormat("#0.0").format($V{totalMinutes} / 60.0 / $V{REPORT_COUNT}) 
+                        : "0.0") + " ч/запись"
+                ]]></textFieldExpression>
+            </textField>
+            
+            <!-- Графический разделитель -->
+            <line>
+                <reportElement x="0" y="95" width="555" height="1"/>
+                <graphicElement>
+                    <pen lineWidth="0.5" lineColor="#95A5A6"/>
+                </graphicElement>
+            </line>
+            
+            <!-- Подпись -->
+            <textField>
+                <reportElement x="0" y="105" width="555" height="15"/>
+                <textElement textAlignment="Center">
+                    <font size="8" isItalic="true" pdfFontName="Helvetica-Oblique"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Отчет сгенерирован автоматически. Student Time Management System © " + 
+                    new java.text.SimpleDateFormat("yyyy").format(new java.util.Date())]]></textFieldExpression>
+            </textField>
+            
+            <!-- Номер страницы -->
+            <textField>
+                <reportElement x="0" y="120" width="555" height="15"/>
+                <textElement textAlignment="Center">
+                    <font size="8" pdfFontName="Helvetica"/>
+                </textElement>
+                <textFieldExpression><![CDATA["Страница " + $V{PAGE_NUMBER} + " из " + $V{PAGE_COUNT}]]></textFieldExpression>
+            </textField>
+        </band>
+    </summary>
+    
+    <!-- Нижний колонтитул страницы -->
+    <pageFooter>
+        <band height="20">
+            <line>
+                <reportElement x="0" y="0" width="555" height="1"/>
+                <graphicElement>
+                    <pen lineWidth="0.5" lineColor="#CCCCCC"/>
+                </graphicElement>
+            </line>
+        </band>
+    </pageFooter>
+</jasperReport>
